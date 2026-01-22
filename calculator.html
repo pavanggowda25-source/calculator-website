@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculator App</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    text-align: center;
+    padding: 1rem 1rem 0.2rem;
+}
+.page-title {
+    margin-bottom: 0.2rem;
+}
+
+.menu {
+    margin: 40px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.5rem 1rem;
+    max-width: 360px;
+}
+.menu button {
+    background: white;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    height: 85px;
+    font-size: 1rem;
+    border-radius: 12px;
+    border: none;
+}
+
+.calculator {
+    max-width: 320px;
+    margin: 40px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.hidden { display: none; }
+
+label {
+    display: block;
+    margin-top: 14px;
+    font-weight: bold;
+    font-size: 0.95em;
+}
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.flex-row {
+    display: flex;
+    gap: 10px;
+}
+.flex-row input { flex: 2; }
+.flex-row select { flex: 1; }
+
+button.calc {
+    width: 100%;
+    margin-top: 18px;
+    padding: 12px;
+    background: #4CAF50;
+    border: none;
+    color: white;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+button.back {
+    margin-top: 20px;
+    background: #999;
+}
+
+.result {
+    margin-top: 20px;
+    background: #e8f5e8;
+    padding: 15px;
+    border-radius: 6px;
+    line-height: 1.5;
+    font-size: 0.95em;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 0.85em;
+}
+th, td {
+    border: 1px solid #ccc;
+    padding: 4px 6px;
+    text-align: center;
+}
+th { 
+    background: #d4edda; 
+    font-weight: bold;
+}
+
+.frequency-group {
+    display: none;
+}
+</style>
+</head>
+
+<body>
+<header>
+    <h1 class="page-title" id="mainTitle">Calculator</h1>
+</header>
+
+<div class="menu" id="menu">
+    <button onclick="openPage('profit')">Profit Calculator</button>
+    <button onclick="openPage('interest')">Interest Calculator</button>
+    <button onclick="openPage('loan')">Loan Calculator</button>
+    <button onclick="openPage('fvpv')">FV/PV Calculator</button>
+</div>
+
+<!-- PROFIT -->
+<div class="calculator hidden" id="profit">
+    <h1>💰Profit Calculator</h1>
+    <label>Cost Price</label>
+    <div class="flex-row">
+        <input type="number" id="cost" placeholder="1000">
+        <select id="profitCurrency"></select>
+    </div>
+    <label>Margin(%)</label>
+    <input type="number" id="margin" value="0" step="0.1" min="0" max="99">
+    <button class="calc" onclick="calculateProfit()">Calculate Profit</button>
+    <div id="profitResult" class="result"></div>
+    <button class="calc back" onclick="goBack()">⬅ Back</button>
+</div>
+
+<!-- INTEREST -->
+<div class="calculator hidden" id="interest">
+    <h1>📈Interest Calculator</h1>
+    <label>Principal Amount</label>
+    <input type="number" id="principal" placeholder="10000">
+    <label>Currency</label>
+    <select id="interestCurrency"></select>
+    <label>Rate (%)</label>
+    <input type="number" id="rate" placeholder="5" step="0.1">
+    <label>Years</label>
+    <input type="number" id="time" placeholder="1">
+    <label>Type</label>
+    <select id="interestCalcType" onchange="toggleFrequency()">
+        <option value="simple">Simple</option>
+        <option value="compound">Compound</option>
+    </select>
+    <div class="frequency-group" id="frequencyGroup">
+        <label>Frequency</label>
+        <select id="compoundFreq">
+            <option value="1">Yearly</option>
+            <option value="4">Quarterly</option>
+            <option value="12">Monthly</option>
+        </select>
+    </div>
+    <button class="calc" onclick="calculateInterest()">Calculate</button>
+    <div id="interestResult" class="result"></div>
+    <button class="calc back" onclick="goBack()">⬅ Back</button>
+</div>
+
+<!-- LOAN -->
+<div class="calculator hidden" id="loan">
+    <h1>💳Loan Calculator</h1>
+    <label>Loan Amount</label>
+    <input type="number" id="loanAmount" placeholder="50000">
+    <label>Currency</label>
+    <select id="loanCurrency"></select>
+    <label>Interest Rate (%)</label>
+    <input type="number" id="interestRate" placeholder="7" step="0.1">
+    <label>Years</label>
+    <input type="number" id="loanYears" placeholder="5">
+    <label>Frequency</label>
+    <select id="frequency">
+        <option value="12">Monthly</option>
+        <option value="52">Weekly</option>
+        <option value="365">Daily</option>
+    </select>
+    <label>Mode</label>
+    <select id="loanMode">
+        <option value="emi">EMI</option>
+        <option value="interestOnly">Interest Only</option>
+    </select>
+    <label>Extra Payment</label>
+    <input type="number" id="extraPayment" value="0">
+    <button class="calc" onclick="calculateLoan()">Calculate</button>
+    <div id="loanResult" class="result"></div>
+    <div id="monthlyBreakdown"></div>
+    <button class="calc back" onclick="goBack()">⬅ Back</button>
+</div>
+
+<!-- FV/PV -->
+<div class="calculator hidden" id="fvpv">
+    <h1>💹FV/PV Calculator</h1>
+    <label>Amount</label>
+    <input type="number" id="fvpvAmount" placeholder="10000">
+    <label>Currency</label>
+    <select id="fvpvCurrency"></select>
+    <label>Rate (%)</label>
+    <input type="number" id="fvpvRate" placeholder="5" step="0.1">
+    <label>Years</label>
+    <input type="number" id="fvpvTime" placeholder="5">
+    <label>Frequency</label>
+    <select id="fvpvFreq">
+        <option value="1">Yearly</option>
+        <option value="4">Quarterly</option>
+        <option value="12">Monthly</option>
+    </select>
+    <label>Operation</label>
+    <select id="fvpvOp">
+        <option value="fv">Future Value</option>
+        <option value="pv">Present Value</option>
+    </select>
+    <button class="calc" onclick="calculateFVPV()">Calculate</button>
+    <div id="fvpvResult" class="result"></div>
+    <button class="calc back" onclick="goBack()">⬅ Back</button>
+</div>
+
+<script>
+// 🌍 180+ WORLD CURRENCIES WITH SYMBOLS
+const currencySymbols = {
+    USD:"$", EUR:"€", GBP:"£", JPY:"¥", AUD:"A$", CAD:"C$", CHF:"CHF", CNY:"¥", 
+    INR:"₹", RUB:"₽", BRL:"R$", KRW:"₩", MXN:"$", SGD:"S$", HKD:"HK$", 
+    NZD:"NZ$", ZAR:"R", AED:"د.إ", SAR:"﷼", SEK:"kr", NOK:"kr", DKK:"kr", 
+    PLN:"zł", CZK:"Kč", HUF:"Ft", RON:"lei", BGN:"лв", TRY:"₺", UAH:"₴", 
+    THB:"฿", MYR:"RM", PHP:"₱", IDR:"Rp", VND:"₫", PKR:"₨", NPR:"रु", 
+    LKR:"රු", BDT:"৳", EGP:"£", NGN:"₦", KES:"KSh", GHS:"GH₵", MAD:"د.م.", 
+    KZT:"₸", UZS:"so'm"
+};
+
+const allCurrencies = [
+    'AED','AFN','ALL','AMD','ANG','AOA','ARS','AUD','AWG','AZN','BAM','BBD','BDT','BGN','BHD','BIF','BMD','BND','BOB','BRL',
+    'BSD','BTN','BWP','BYN','BZD','CAD','CDF','CHF','CLP','CNY','COP','CRC','CUC','CUP','CVE','CZK','DJF','DKK','DOP','DZD',
+    'EGP','ERN','ETB','EUR','FJD','FKP','GBP','GEL','GGP','GHS','GIP','GMD','GNF','GTQ','GYD','HKD','HNL','HRK','HTG','HUF',
+    'IDR','ILS','IMP','INR','IQD','IRR','ISK','JEP','JMD','JOD','JPY','KES','KGS','KHR','KMF','KPW','KRW','KWD','KYD','KZT',
+    'LAK','LBP','LKR','LRD','LSL','LYD','MAD','MDL','MGA','MKD','MMK','MNT','MOP','MRU','MUR','MVR','MWK','MXN','MYR','MZN',
+    'NAD','NGN','NIO','NOK','NPR','NZD','OMR','PAB','PEN','PGK','PHP','PKR','PLN','PYG','QAR','RON','RSD','RUB','RWF','SAR',
+    'SBD','SCR','SDG','SEK','SGD','SHP','SLE','SLL','SOS','SRD','SSP','STN','STX','SYP','SZL','THB','TJS','TMT','TND','TOP',
+    'TRY','TTD','TWD','TZS','UAH','UGX','USD','UYU','UZS','VES','VND','VUV','WST','XAF','XCD','XDR','XOF','XPF','YER','ZAR',
+    'ZMW','ZWL'
+];
+
+// ✅ TOGGLE FREQUENCY VISIBILITY
+function toggleFrequency() {
+    const type = document.getElementById('interestCalcType').value;
+    const freqGroup = document.getElementById('frequencyGroup');
+    if (type === 'compound') {
+        freqGroup.style.display = 'block';
+    } else {
+        freqGroup.style.display = 'none';
+        document.getElementById('compoundFreq').value = '1';
+    }
+}
+
+// ✅ RESET ALL INPUTS & RESULTS
+function resetCalculator(pageId) {
+    // Clear Results
+    document.getElementById('profitResult').innerHTML = '';
+    document.getElementById('interestResult').innerHTML = '';
+    document.getElementById('loanResult').innerHTML = '';
+    document.getElementById('monthlyBreakdown').innerHTML = '';
+    document.getElementById('fvpvResult').innerHTML = '';
+    
+    // Clear Inputs by page
+    if (pageId === 'profit') {
+        document.getElementById('cost').value = '';
+        document.getElementById('margin').value = '0';
+    } else if (pageId === 'interest') {
+        document.getElementById('principal').value = '';
+        document.getElementById('rate').value = '';
+        document.getElementById('time').value = '';
+        document.getElementById('interestCalcType').value = 'simple';
+        document.getElementById('compoundFreq').value = '1';
+        document.getElementById('frequencyGroup').style.display = 'none';
+    } else if (pageId === 'loan') {
+        document.getElementById('loanAmount').value = '';
+        document.getElementById('interestRate').value = '';
+        document.getElementById('loanYears').value = '';
+        document.getElementById('frequency').value = '12';
+        document.getElementById('loanMode').value = 'emi';
+        document.getElementById('extraPayment').value = '0';
+    } else if (pageId === 'fvpv') {
+        document.getElementById('fvpvAmount').value = '';
+        document.getElementById('fvpvRate').value = '';
+        document.getElementById('fvpvTime').value = '';
+        document.getElementById('fvpvFreq').value = '1';
+        document.getElementById('fvpvOp').value = 'fv';
+    }
+}
+
+function initCurrencies() {
+    const selectors = ['profitCurrency', 'interestCurrency', 'loanCurrency', 'fvpvCurrency'];
+    
+    selectors.forEach(id => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        sel.innerHTML = "";
+        allCurrencies.forEach(c => {
+            let o = document.createElement("option");
+            o.value = c;
+            o.textContent = `${c} (${currencySymbols[c] || c})`;
+            sel.appendChild(o);
+        });
+        sel.value = "INR";
+    });
+}
+
+function formatCurrency(amount, currency) {
+    return (currencySymbols[currency] || currency) + Math.round(amount).toLocaleString('en-IN');
+}
+
+function openPage(id) {
+    resetCalculator(id);
+    
+    document.getElementById('menu').style.display = "none";
+    document.getElementById('mainTitle').style.display = "none";
+    document.querySelectorAll(".calculator").forEach(c => c.classList.add("hidden"));
+    document.getElementById(id).classList.remove("hidden");
+    
+    if (id === 'interest') {
+        toggleFrequency();
+    }
+}
+
+function goBack() {
+    document.getElementById('menu').style.display = "flex";
+    document.getElementById('mainTitle').style.display = "block";
+    document.querySelectorAll(".calculator").forEach(c => c.classList.add("hidden"));
+}
+
+// PROFIT CALCULATOR
+function calculateProfit() {
+    const cost = parseFloat(document.getElementById('cost').value) || 0;
+    const marginPercent = parseFloat(document.getElementById('margin').value) || 0;
+    const cur = document.getElementById('profitCurrency').value;
+    
+    if (cost <= 0) {
+        document.getElementById('profitResult').innerHTML = '<span style="color:red">Enter valid cost price</span>';
+        return;
+    }
+    
+    if (marginPercent >= 100) {
+        document.getElementById('profitResult').innerHTML = '<span style="color:red">Margin cannot be 100% or more</span>';
+        return;
+    }
+    
+    const marginDecimal = marginPercent / 100;
+    const sellPrice = cost / (1 - marginDecimal);
+    const profitAmount = sellPrice - cost;
+    
+    document.getElementById('profitResult').innerHTML = `
+        <strong>Sell Price:</strong> ${formatCurrency(sellPrice, cur)}<br>
+        <strong>Profit:</strong> ${formatCurrency(profitAmount, cur)}<br>
+        <strong>Margin:</strong> ${marginPercent.toFixed(1)}%
+    `;
+}
+
+// INTEREST CALCULATOR
+function calculateInterest() {
+    const P = parseFloat(document.getElementById('principal').value) || 0;
+    const r = parseFloat(document.getElementById('rate').value) / 100 || 0;
+    const t = parseFloat(document.getElementById('time').value) || 0;
+    const n = parseFloat(document.getElementById('compoundFreq').value);
+    const cur = document.getElementById('interestCurrency').value;
+    
+    let totalInterest, finalAmount, table = `<table><tr><th>Period</th><th>Interest</th><th>Amount</th></tr>`;
+    
+    if (document.getElementById('interestCalcType').value === "simple") {
+        totalInterest = P * r * t;
+        finalAmount = P + totalInterest;
+        for (let i = 1; i <= t; i++) {
+            const periodAmount = P + (P * r * i);
+            table += `<tr><td>Year ${i}</td><td>${formatCurrency(P * r, cur)}</td><td>${formatCurrency(periodAmount, cur)}</td></tr>`;
+        }
+    } else {
+        let amount = P;
+        for (let i = 1; i <= n * t; i++) {
+            const interest = amount * (r / n);
+            amount += interest;
+            table += `<tr><td>${i}</td><td>${formatCurrency(interest, cur)}</td><td>${formatCurrency(amount, cur)}</td></tr>`;
+        }
+        finalAmount = amount;
+        totalInterest = finalAmount - P;
+    }
+    
+    table += "</table>";
+    document.getElementById('interestResult').innerHTML = `
+        <strong>Total Interest:</strong> ${formatCurrency(totalInterest, cur)}<br>
+        <strong>Final Amount:</strong> ${formatCurrency(finalAmount, cur)}<br>
+        ${table}
+    `;
+}
+
+// LOAN CALCULATOR
+function calculateLoan() {
+    const P = parseFloat(document.getElementById('loanAmount').value) || 0;
+    const annualRate = parseFloat(document.getElementById('interestRate').value) / 100 || 0;
+    const years = parseFloat(document.getElementById('loanYears').value) || 0;
+    const freq = parseFloat(document.getElementById('frequency').value);
+    const extra = parseFloat(document.getElementById('extraPayment').value) || 0;
+    const cur = document.getElementById('loanCurrency').value;
+    
+    const r = annualRate / freq;
+    const n = years * freq;
+    
+    let payment, totalInterest = 0;
+    let table = `<table><tr><th>Period</th><th>Principal</th><th>Interest</th><th>Balance</th></tr>`;
+    
+    if (document.getElementById('loanMode').value === "interestOnly") {
+        payment = (P * r) + extra;
+        totalInterest = payment * n - P;
+    } else {
+        if (r === 0) {
+            payment = (P / n) + extra;
+        } else {
+            payment = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1) + extra;
+        }
+        let balance = P;
+        
+        for (let i = 1; i <= n && balance > 0; i++) {
+            const interest = balance * r;
+            const principal = Math.min(payment - interest, balance);
+            balance -= principal;
+            totalInterest += interest;
+            
+            table += `<tr>
+                <td>${i}</td>
+                <td>${formatCurrency(principal, cur)}</td>
+                <td>${formatCurrency(interest, cur)}</td>
+                <td>${formatCurrency(Math.max(0, balance), cur)}</td>
+            </tr>`;
+        }
+    }
+    
+    table += "</table>";
+    document.getElementById('loanResult').innerHTML = `
+        <strong>Payment per period:</strong> ${formatCurrency(payment, cur)}<br>
+        <strong>Total Interest:</strong> ${formatCurrency(totalInterest, cur)}<br>
+        <strong>Total Payable:</strong> ${formatCurrency(P + totalInterest, cur)}
+    `;
+    document.getElementById('monthlyBreakdown').innerHTML = table;
+}
+
+// FV/PV CALCULATOR - UPDATED TABLE HEADERS
+function calculateFVPV() {
+    const amount = parseFloat(document.getElementById('fvpvAmount').value) || 0;
+    const r = parseFloat(document.getElementById('fvpvRate').value) / 100 || 0;
+    const t = parseFloat(document.getElementById('fvpvTime').value) || 0;
+    const n = parseFloat(document.getElementById('fvpvFreq').value);
+    const cur = document.getElementById('fvpvCurrency').value;
+    
+    let result = amount;
+    
+    if (document.getElementById('fvpvOp').value === "fv") {
+        let table = `<table><tr><th>Period</th><th>Interest Added</th><th>Amount</th></tr>`;
+        for (let i = 1; i <= n * t; i++) {
+            const interest = result * (r / n);
+            result += interest;
+            table += `<tr><td>${i}</td><td>${formatCurrency(interest, cur)}</td><td>${formatCurrency(result, cur)}</td></tr>`;
+        }
+        table += "</table>";
+        document.getElementById('fvpvResult').innerHTML = `
+            <strong>Future Value:</strong> ${formatCurrency(result, cur)}<br>
+            ${table}
+        `;
+    } else {
+        let table = `<table><tr><th>Period</th><th>Interest Deducted</th><th>Amount</th></tr>`;
+        for (let i = n * t; i >= 1; i--) {
+            const prevAmount = result / (1 + r / n);
+            const discount = result - prevAmount;
+            table += `<tr><td>${i}</td><td>${formatCurrency(discount, cur)}</td><td>${formatCurrency(prevAmount, cur)}</td></tr>`;
+            result = prevAmount;
+        }
+        table += "</table>";
+        document.getElementById('fvpvResult').innerHTML = `
+            <strong>Present Value:</strong> ${formatCurrency(result, cur)}<br>
+            ${table}
+        `;
+    }
+}
+
+// Initialize
+window.onload = function() {
+    initCurrencies();
+    toggleFrequency(); // Initialize frequency visibility
+};
+</script>
+
+</body>
+</html>
