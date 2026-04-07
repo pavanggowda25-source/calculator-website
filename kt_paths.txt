@@ -1,0 +1,4 @@
+C:\Users\Admin\AndroidStudioProjects\complexcalculator2\app\src\main\java\com\popa\calculator\MainActivity.kt
+C:\Users\Admin\AndroidStudioProjects\complexcalculator2\app\src\main\java\com\popa\calculator\ui\theme\Color.kt
+C:\Users\Admin\AndroidStudioProjects\complexcalculator2\app\src\main\java\com\popa\calculator\ui\theme\Theme.kt
+C:\Users\Admin\AndroidStudioProjects\complexcalculator2\app\src\main\java\com\popa\calculator\ui\theme\Type.kt
